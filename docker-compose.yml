@@ -1,0 +1,85 @@
+version: '2.1'
+networks:
+  monitoring:
+    driver: bridge
+volumes:
+    prometheus_data: {}
+    grafana_data: {}
+services:
+  prometheus:
+    image: prom/prometheus:v2.20.1
+    container_name: prometheus
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    ports:
+      - 9090:9090
+    expose:
+      - 9090
+    networks:
+      - monitoring
+  grafana:
+    image: grafana/grafana:7.1.5
+    container_name: grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    ports:
+      - 3000:3000
+    expose:
+      - 3000
+    networks:
+      - monitoring
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-config.yaml:/etc/loki-config.yaml
+    command: -config.file=/etc/loki-config.yaml
+    networks:
+      - monitoring
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: promtail
+    volumes:
+      - ./promtail-config.yaml:/etc/promtail-config.yaml      
+      - /var/log:/var/log
+    command: -config.file=/etc/promtail-config.yaml
+    networks:
+      - monitoring
+
+  jaeger:
+    container_name: jaeger
+    networks:
+      - monitoring
+    image: jaegertracing/all-in-one
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "14268:14268"
+      - "14250:14250"
+      - "9411:9411"
+
+  nodejs-app:
+    build:
+      context: nodejs-app
+    ports:
+      - 8080:8080
+    volumes:
+      - /var/log:/var/log
+    expose:
+      - 8080
+    networks:
+      - monitoring

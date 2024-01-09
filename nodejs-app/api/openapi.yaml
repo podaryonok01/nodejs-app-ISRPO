@@ -1,0 +1,160 @@
+openapi: 3.0.3
+info:
+  title: Туристическое агентство
+  version: 0.0.1
+servers:
+- url: http://localhost:8080/api/
+  description: Dev server
+paths:
+  /tours:
+    get:
+      tags:
+      - Tours
+      summary: Метод получения списка доступных туров
+      operationId: getAllTours
+      x-eov-operation-id: getAllTours
+      x-eov-operation-handler: controllers/Tours
+      responses:
+        "200":
+          description: Успешный ответ со списком туров
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tours'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-swagger-router-controller: Tours
+    post:
+      tags:
+      - Tours
+      summary: Метод создания нового тура
+      operationId: createTour
+      x-eov-operation-id: createTour
+      x-eov-operation-handler: controllers/Tours
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tour'
+        
+      responses:
+        "200":
+          description: Успешный ответ с объектом созданного тура
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tour'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-swagger-router-controller: Tours
+  /tours/{tour_id}:
+    get:
+      tags:
+      - Tours
+      summary: Метод получения тура по его id
+      operationId: getTourById
+      x-eov-operation-id: getTourById
+      x-eov-operation-handler: controllers/Tours
+      parameters:
+      - name: tour_id
+        in: path
+        description: Идентификатор тура
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Успешный ответ с объектом запрашиваемого тура
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tour'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-swagger-router-controller: Tours
+    delete:
+      tags:
+      - Tours
+      summary: Метод удаления тура по его id
+      operationId: deleteTourById
+      x-eov-operation-id: deleteTourById
+      x-eov-operation-handler: controllers/Tours
+      parameters:
+      - name: tour_id
+        in: path
+        description: Идентификатор тура
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Успешное удаление
+          content:
+            application/json: {}
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-swagger-router-controller: Tours
+components:
+  schemas:
+    Tour:
+      required:
+      - endDate
+      - location
+      - price
+      - startDate
+      type: object
+      properties:
+        id_tour:
+          type: string
+        location:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+        price:
+          type: number
+        info:
+          type: string
+      example:
+        endDate: "01.12.2024"
+        price: 100000
+        id_tour: id_tour
+        location: Москва
+        startDate: "01.10.2024"
+        info: info
+    Tours:
+      type: array
+      items:
+        $ref: '#/components/schemas/Tour'
+    Error:
+      required:
+      - code
+      - message
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
